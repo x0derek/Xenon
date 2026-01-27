@@ -1,7 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
 <JUCERPROJECT id="g7hJdQ" name="Xenon" projectType="audioplug" useAppConfig="0"
-              addUsingNamespaceToJuceHeader="0" jucerFormatVersion="1">
+              addUsingNamespaceToJuceHeader="0" jucerFormatVersion="1" pluginFormats="buildAU,buildStandalone,buildVST"
+              pluginCharacteristicsValue="pluginIsSynth,pluginWantsMidiIn"
+              pluginCode="Xeon">
   <MAINGROUP id="Ki9Qfg" name="Xenon">
     <GROUP id="{1D15D2A1-0246-0E3D-C097-53DBC71C1A01}" name="Source">
       <FILE id="NfR0Wj" name="PluginProcessor.cpp" compile="1" resource="0"
