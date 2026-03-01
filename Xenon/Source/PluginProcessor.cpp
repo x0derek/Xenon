@@ -63,7 +63,7 @@ juce::AudioProcessorValueTreeState::ParameterLayout XenonAudioProcessor::createP
     // MASTER
     layout.add(std::make_unique<juce::AudioParameterFloat>(
         juce::ParameterID { "gain", 1 }, "GAIN",
-        juce::NormalisableRange<float>(0.0f, 1.0f, 0.01f), 1.0f));
+        juce::NormalisableRange<float>(0.0f, 2.0f, 0.01f), 1.0f));
         
     layout.add(std::make_unique<juce::AudioParameterFloat>(
         juce::ParameterID { "pitch", 1 }, "PITCH",
