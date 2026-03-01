@@ -1,33 +1,39 @@
-/*
-  ==============================================================================
-
-    This file contains the basic framework code for a JUCE plugin editor.
-
-  ==============================================================================
-*/
-
 #pragma once
-
 #include <JuceHeader.h>
 #include "PluginProcessor.h"
+#include "XenonLookAndFeel.h"
+#include "EnvelopeSection.h"
+#include "OscSection.h"
+#include "FilterSection.h"
+#include "ReverbSection.h"
+#include "MasterSection.h"
 
-//==============================================================================
-/**
+/*
+  -=-=-=-=-=-=-=-=-=-=-=-=-
+    Xenon - PluginEditor.h
+    Main GUI Header
+  -=-=-=-=-=-=-=-=-=-=-=-=-
 */
-class XenonAudioProcessorEditor  : public juce::AudioProcessorEditor
+
+class XenonAudioProcessorEditor : public juce::AudioProcessorEditor
 {
-public:
-    XenonAudioProcessorEditor (XenonAudioProcessor&);
+  public:
+    XenonAudioProcessorEditor(XenonAudioProcessor&);
     ~XenonAudioProcessorEditor() override;
 
-    //==============================================================================
-    void paint (juce::Graphics&) override;
+    void paint(juce::Graphics&) override;
     void resized() override;
 
-private:
-    // This reference is provided as a quick way for your editor to
-    // access the processor object that created it.
+  private:
     XenonAudioProcessor& audioProcessor;
 
-    JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (XenonAudioProcessorEditor)
+    XenonLookAndFeel lnf;
+
+    EnvelopeSection envelopeSection;
+    OscSection oscSection;
+    FilterSection filterSection;
+    ReverbSection reverbSection;
+    MasterSection masterSection;
+
+    JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(XenonAudioProcessorEditor)
 };

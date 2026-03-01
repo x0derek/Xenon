@@ -1,190 +1,180 @@
-/*
-  ==============================================================================
-
-    This file contains the basic framework code for a JUCE plugin processor.
-
-  ==============================================================================
-*/
-
 #include "PluginProcessor.h"
 #include "PluginEditor.h"
+#include "ADSR.h"
 
-//==============================================================================
+/*
+  -=-=-=-=-=-=-=-=-=-=-=-=-=-=-
+    Xenon - PluginProcessor.cpp
+    Audio Logic Implementation
+  -=-=-=-=-=-=-=-=-=-=-=-=-=-=-
+*/
+
+class SimpleSound : public juce::SynthesiserSound
+{
+    public:
+    bool appliesToNote(int) override {return true;}
+    bool appliesToChannel(int) override {return true;}
+};
+
+juce::AudioProcessorValueTreeState::ParameterLayout XenonAudioProcessor::createParameterLayout()
+{
+    juce::AudioProcessorValueTreeState::ParameterLayout layout;
+    
+    // ADSR
+    layout.add(std::make_unique<juce::AudioParameterFloat>(
+        juce::ParameterID { "attack", 1 }, "ATTACK",
+        juce::NormalisableRange<float>(0.001f, 5.0f, 0.001f, 0.3f), 0.01f));
+        
+    layout.add(std::make_unique<juce::AudioParameterFloat>(
+        juce::ParameterID { "decay", 1 }, "DECAY",
+        juce::NormalisableRange<float>(0.001f, 5.0f, 0.001f, 0.3f), 0.01f));
+        
+    layout.add(std::make_unique<juce::AudioParameterFloat>(
+        juce::ParameterID { "sustain", 1 }, "SUSTAIN",
+        juce::NormalisableRange<float>(0.0f, 1.0f, 0.001f), 0.07f));
+        
+    layout.add(std::make_unique<juce::AudioParameterFloat>(
+        juce::ParameterID { "release", 1 }, "RELEASE",
+        juce::NormalisableRange<float>(0.001f, 5.0f, 0.001f, 0.3f), 0.01f));
+
+    // OSCILLATOR
+    layout.add(std::make_unique<juce::AudioParameterChoice>(
+        juce::ParameterID { "waveType", 1 }, "WAVE TYPE",
+        juce::StringArray { "SINE", "SAW", "SQUARE", "TRIANGLE" }, 0));
+    
+    // FILTER
+    layout.add(std::make_unique<juce::AudioParameterFloat>(
+        juce::ParameterID { "filterCutoff", 1 }, "CUTOFF",
+        juce::NormalisableRange<float>(20.0f, 20000.0f, 1.0f, 0.3f), 8000.0f));
+        
+    layout.add(std::make_unique<juce::AudioParameterFloat>(
+        juce::ParameterID { "filterResonance", 1 }, "RESONANCE",
+        juce::NormalisableRange<float>(0.1f, 10.0f, 0.01f), 0.7f));
+
+    // REVERB
+    layout.add(std::make_unique<juce::AudioParameterFloat>(
+        juce::ParameterID { "reverbSize", 1 }, "SIZE",
+        juce::NormalisableRange<float>(0.0f, 1.0f, 0.001f), 0.3f));
+        
+    layout.add(std::make_unique<juce::AudioParameterFloat>(
+        juce::ParameterID { "reverbMix", 1 }, "MIX",
+        juce::NormalisableRange<float>(0.0f, 1.0f, 0.001f), 0.2f));
+
+    // MASTER
+    layout.add(std::make_unique<juce::AudioParameterFloat>(
+        juce::ParameterID { "gain", 1 }, "GAIN",
+        juce::NormalisableRange<float>(0.0f, 1.0f, 0.01f), 1.0f));
+        
+    layout.add(std::make_unique<juce::AudioParameterFloat>(
+        juce::ParameterID { "pitch", 1 }, "PITCH",
+        juce::NormalisableRange<float>(-24.0f, 24.0f, 1.0f), 0.0f));
+
+    return layout;
+}
+
 XenonAudioProcessor::XenonAudioProcessor()
 #ifndef JucePlugin_PreferredChannelConfigurations
-     : AudioProcessor (BusesProperties()
-                     #if ! JucePlugin_IsMidiEffect
-                      #if ! JucePlugin_IsSynth
-                       .withInput  ("Input",  juce::AudioChannelSet::stereo(), true)
-                      #endif
-                       .withOutput ("Output", juce::AudioChannelSet::stereo(), true)
-                     #endif
-                       )
+: AudioProcessor(BusesProperties()
+                .withOutput("Output", juce::AudioChannelSet::stereo(), true)),
+#else
+    :
 #endif
+    apvts(*this, nullptr, "Parameters", createParameterLayout())
 {
+    synth.clearVoices();
+    for (int i = 0; i < 8; i++)
+        synth.addVoice(new ADSR());
+
+    synth.clearSounds();
+    synth.addSound(new SimpleSound());
 }
 
-XenonAudioProcessor::~XenonAudioProcessor()
-{
-}
+XenonAudioProcessor::~XenonAudioProcessor() {}
 
-//==============================================================================
-const juce::String XenonAudioProcessor::getName() const
+void XenonAudioProcessor::prepareToPlay(double sampleRate, int samplesPerBlock)
 {
-    return JucePlugin_Name;
-}
-
-bool XenonAudioProcessor::acceptsMidi() const
-{
-   #if JucePlugin_WantsMidiInput
-    return true;
-   #else
-    return false;
-   #endif
-}
-
-bool XenonAudioProcessor::producesMidi() const
-{
-   #if JucePlugin_ProducesMidiOutput
-    return true;
-   #else
-    return false;
-   #endif
-}
-
-bool XenonAudioProcessor::isMidiEffect() const
-{
-   #if JucePlugin_IsMidiEffect
-    return true;
-   #else
-    return false;
-   #endif
-}
-
-double XenonAudioProcessor::getTailLengthSeconds() const
-{
-    return 0.0;
-}
-
-int XenonAudioProcessor::getNumPrograms()
-{
-    return 1;   // NB: some hosts don't cope very well if you tell them there are 0 programs,
-                // so this should be at least 1, even if you're not really implementing programs.
-}
-
-int XenonAudioProcessor::getCurrentProgram()
-{
-    return 0;
-}
-
-void XenonAudioProcessor::setCurrentProgram (int index)
-{
-}
-
-const juce::String XenonAudioProcessor::getProgramName (int index)
-{
-    return {};
-}
-
-void XenonAudioProcessor::changeProgramName (int index, const juce::String& newName)
-{
-}
-
-//==============================================================================
-void XenonAudioProcessor::prepareToPlay (double sampleRate, int samplesPerBlock)
-{
-    // Use this method as the place to do any pre-playback
-    // initialisation that you need..
+    juce::ignoreUnused(samplesPerBlock);
+    synth.setCurrentPlaybackSampleRate(sampleRate);
+    reverb.setSampleRate(sampleRate);
+    reverb.reset();
 }
 
 void XenonAudioProcessor::releaseResources()
 {
-    // When playback stops, you can use this as an opportunity to free up any
-    // spare memory, etc.
+    synth.allNotesOff(0, false);
 }
 
-#ifndef JucePlugin_PreferredChannelConfigurations
-bool XenonAudioProcessor::isBusesLayoutSupported (const BusesLayout& layouts) const
+bool XenonAudioProcessor::isBusesLayoutSupported(const BusesLayout& layouts) const
 {
-  #if JucePlugin_IsMidiEffect
-    juce::ignoreUnused (layouts);
-    return true;
-  #else
-    // This is the place where you check if the layout is supported.
-    // In this template code we only support mono or stereo.
-    // Some plugin hosts, such as certain GarageBand versions, will only
-    // load plugins that support stereo bus layouts.
-    if (layouts.getMainOutputChannelSet() != juce::AudioChannelSet::mono()
-     && layouts.getMainOutputChannelSet() != juce::AudioChannelSet::stereo())
+    if (layouts.getMainOutputChannelSet() != juce::AudioChannelSet::mono() && layouts.getMainOutputChannelSet() != juce::AudioChannelSet::stereo())
         return false;
-
-    // This checks if the input layout matches the output layout
-   #if ! JucePlugin_IsSynth
-    if (layouts.getMainOutputChannelSet() != layouts.getMainInputChannelSet())
-        return false;
-   #endif
-
     return true;
-  #endif
 }
-#endif
 
-void XenonAudioProcessor::processBlock (juce::AudioBuffer<float>& buffer, juce::MidiBuffer& midiMessages)
+void XenonAudioProcessor::processBlock(juce::AudioBuffer<float>& buffer, juce::MidiBuffer& midiMessages)
 {
     juce::ScopedNoDenormals noDenormals;
-    auto totalNumInputChannels  = getTotalNumInputChannels();
-    auto totalNumOutputChannels = getTotalNumOutputChannels();
+    buffer.clear();
 
-    // In case we have more outputs than inputs, this code clears any output
-    // channels that didn't contain input data, (because these aren't
-    // guaranteed to be empty - they may contain garbage).
-    // This is here to avoid people getting screaming feedback
-    // when they first compile a plugin, but obviously you don't need to keep
-    // this code if your algorithm always overwrites all the output channels.
-    for (auto i = totalNumInputChannels; i < totalNumOutputChannels; ++i)
-        buffer.clear (i, 0, buffer.getNumSamples());
+    float attack = apvts.getRawParameterValue("attack") -> load();
+    float decay = apvts.getRawParameterValue("decay") -> load();
+    float sustain = apvts.getRawParameterValue("sustain") -> load();
+    float release = apvts.getRawParameterValue("release") -> load();
+    int wave = apvts.getRawParameterValue("waveType") -> load();
+    float cutoff = apvts.getRawParameterValue("filterCutoff") -> load();
+    float reson = apvts.getRawParameterValue("filterResonance") -> load();
+    float rvbSize = apvts.getRawParameterValue("reverbSize") -> load();
+    float rvbMix = apvts.getRawParameterValue("reverbMix") -> load();
+    float gain = apvts.getRawParameterValue("gain") -> load();
+    float pitch = apvts.getRawParameterValue("pitch") -> load();
 
-    // This is the place where you'd normally do the guts of your plugin's
-    // audio processing...
-    // Make sure to reset the state if your inner loop is processing
-    // the samples and the outer loop is handling the channels.
-    // Alternatively, you can process the samples with the channels
-    // interleaved by keeping the same state.
-    for (int channel = 0; channel < totalNumInputChannels; ++channel)
-    {
-        auto* channelData = buffer.getWritePointer (channel);
+    for (int i = 0; i < synth.getNumVoices(); ++i)
+        if (auto* voice = dynamic_cast<ADSR*>(synth.getVoice(i)))
+        {
+            voice->setADSRParameters(attack, decay, sustain, release);
+            voice->setWaveType(wave);
+            voice->setFilterParameters(cutoff, reson);
+            voice->setPitchSemitones(pitch);
+        }
 
-        // ..do something to the data...
-    }
+    synth.renderNextBlock(buffer, midiMessages, 0, buffer.getNumSamples());
+
+    //REVERB
+    reverbParams.roomSize = rvbSize;
+    reverbParams.wetLevel = rvbMix;
+    reverbParams.dryLevel = 1.0f - rvbMix * 0.5f;
+    reverbParams.damping = 0.5f;
+    reverbParams.width = 1.0f;
+    reverb.setParameters(reverbParams);
+
+    if(buffer.getNumChannels() >= 2)
+        reverb.processStereo(buffer.getWritePointer(0), buffer.getWritePointer(1), buffer.getNumSamples());
+    else
+        reverb.processMono(buffer.getWritePointer(0), buffer.getNumSamples());
+
+    //GAIN
+    buffer.applyGain(gain);
 }
 
-//==============================================================================
-bool XenonAudioProcessor::hasEditor() const
+void XenonAudioProcessor::getStateInformation(juce::MemoryBlock& destData)
 {
-    return true; // (change this to false if you choose to not supply an editor)
+    auto state = apvts.copyState();
+    std::unique_ptr<juce::XmlElement> xml(state.createXml());
+    copyXmlToBinary(*xml, destData);
+}
+
+void XenonAudioProcessor::setStateInformation(const void* data, int sizeInBytes)
+{
+    std::unique_ptr<juce::XmlElement> xml(getXmlFromBinary(data, sizeInBytes));
+    if (xml != nullptr && xml->hasTagName(apvts.state.getType()))
+        apvts.replaceState(juce::ValueTree::fromXml(*xml));
 }
 
 juce::AudioProcessorEditor* XenonAudioProcessor::createEditor()
 {
-    return new XenonAudioProcessorEditor (*this);
+    return new XenonAudioProcessorEditor(*this);
 }
 
-//==============================================================================
-void XenonAudioProcessor::getStateInformation (juce::MemoryBlock& destData)
-{
-    // You should use this method to store your parameters in the memory block.
-    // You could do that either as raw data, or use the XML or ValueTree classes
-    // as intermediaries to make it easy to save and load complex data.
-}
-
-void XenonAudioProcessor::setStateInformation (const void* data, int sizeInBytes)
-{
-    // You should use this method to restore your parameters from this memory block,
-    // whose contents will have been created by the getStateInformation() call.
-}
-
-//==============================================================================
-// This creates new instances of the plugin..
 juce::AudioProcessor* JUCE_CALLTYPE createPluginFilter()
 {
     return new XenonAudioProcessor();

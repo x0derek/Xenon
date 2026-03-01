@@ -1,40 +1,92 @@
-/*
-  ==============================================================================
-
-    This file contains the basic framework code for a JUCE plugin editor.
-
-  ==============================================================================
-*/
-
 #include "PluginProcessor.h"
 #include "PluginEditor.h"
 
-//==============================================================================
-XenonAudioProcessorEditor::XenonAudioProcessorEditor (XenonAudioProcessor& p)
-    : AudioProcessorEditor (&p), audioProcessor (p)
+/*
+  -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
+    Xenon- PluginEditor.cpp
+    GUI Implementation
+  -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
+*/
+
+XenonAudioProcessorEditor::XenonAudioProcessorEditor(XenonAudioProcessor& p)
+    : AudioProcessorEditor(&p), audioProcessor(p),
+    envelopeSection(p.apvts),
+    oscSection(p.apvts),
+    filterSection(p.apvts),
+    reverbSection(p.apvts),
+    masterSection(p.apvts)
 {
-    // Make sure that before the constructor has finished, you've set the
-    // editor's size to whatever you need it to be.
-    setSize (400, 300);
+    setLookAndFeel(&lnf);
+
+    addAndMakeVisible(envelopeSection);
+    addAndMakeVisible(oscSection);
+    addAndMakeVisible(filterSection);
+    addAndMakeVisible(reverbSection);
+    addAndMakeVisible(masterSection);
+
+    setSize(500, 560);
 }
 
 XenonAudioProcessorEditor::~XenonAudioProcessorEditor()
 {
+    setLookAndFeel(nullptr);
 }
 
-//==============================================================================
-void XenonAudioProcessorEditor::paint (juce::Graphics& g)
+void XenonAudioProcessorEditor::paint(juce::Graphics& g)
 {
-    // (Our component is opaque, so we must completely fill the background with a solid colour)
-    g.fillAll (getLookAndFeel().findColour (juce::ResizableWindow::backgroundColourId));
+    g.fillAll(colBackground);
 
-    g.setColour (juce::Colours::white);
-    g.setFont (juce::FontOptions (15.0f));
-    g.drawFittedText ("Hello World!", getLocalBounds(), juce::Justification::centred, 1);
+    // HEADER
+    juce::Rectangle<float> header(0, 0, getWidth(), 40);
+    g.setColour(colPanel);
+    g.fillRect(header);
+    g.setColour(colBorder);
+    g.drawLine(0.0f, 40.0f, (float)getWidth(), 40.0f, 1.0f);
+    g.setColour(colAccent);
+    g.setFont(juce::FontOptions(22.0f).withStyle("Bold"));
+    g.drawText("XENON", header, juce::Justification::centred);
+    g.setColour(colAccent.withAlpha(0.3f));
+    g.drawLine(20.0f, 39.0f, (float)(getWidth() - 20), 39.0f, 1.0f);
+
+    auto drawSection = [&](juce::Rectangle<int> b, const juce::String& title)
+    {
+        g.setColour(colPanel);
+        g.fillRoundedRectangle(b.toFloat(), 8.0f);
+        g.setColour(colBorder);
+        g.drawRoundedRectangle(b.toFloat(), 8.0f, 1.0f);
+        g.setColour(colAccent2.withAlpha(0.9f));
+        g.setFont(juce::FontOptions(10.0f).withStyle("Bold"));
+        g.drawText(title, b.getX() + 10, b.getY() + 5, 120, 13, juce::Justification::left);
+    };
+
+    const int m = 10;
+    const int t = 46;
+    const int w2 = (getWidth() - 3 * m) / 2;
+    const int h3 = (getHeight() - t - m * 4) / 3;
+
+    // ROW 1
+    drawSection({ m, t, w2, h3 }, "ENVELOPE");
+    drawSection({ m * 2 + w2, t, w2, h3 }, "OSCILLATOR");
+    // ROW 2
+    drawSection({ m, t + h3 + m, w2, h3 }, "FILTER");
+    drawSection({ m * 2 + w2, t + h3 + m, w2, h3 }, "REVERB");
+    // ROW 3
+    drawSection({ m, t + h3 * 2 + m * 2, getWidth() - m * 2, h3 }, "MASTER");
 }
 
 void XenonAudioProcessorEditor::resized()
 {
-    // This is generally where you'll want to lay out the positions of any
-    // subcomponents in your editor..
+    const int m = 10;
+    const int t = 46;
+    const int w2 = (getWidth() - m * 3) / 2;
+    const int h3 = (getHeight() - t - m * 4) / 3;
+
+    // ROW 1
+    envelopeSection.setBounds(m, t, w2, h3);
+    oscSection.setBounds(m * 2 + w2, t, w2, h3);
+    // ROW 2
+    filterSection.setBounds(m, t + h3 + m, w2, h3);
+    reverbSection.setBounds(m * 2 + w2, t + h3 + m, w2, h3);
+    // ROW 3
+    masterSection.setBounds(m, t + h3 * 2 + m * 2, getWidth() - m * 2, h3);
 }
