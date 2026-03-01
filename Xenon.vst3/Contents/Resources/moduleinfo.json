@@ -1,0 +1,48 @@
+{
+  "Name": "Xenon",
+  "Version": "1.0.0",
+  "Factory Info": {
+    "Vendor": "Xenon",
+    "URL": "http://karpowicz.w.zset.leszno.pl",
+    "E-Mail": "i.karpowicz@zset.leszno.pl",
+    "Flags": {
+      "Unicode": true,
+      "Classes Discardable": false,
+      "Component Non Discardable": false,
+    },
+  },
+  "Classes": [
+    {
+      "CID": "ABCDEF019182FAEB4D616E7558656F6E",
+      "Category": "Audio Module Class",
+      "Name": "Xenon",
+      "Vendor": "Xenon",
+      "Version": "1.0.0",
+      "SDKVersion": "VST 3.8.0",
+      "Sub Categories": [
+        "Instrument",
+        "Synth",
+      ],
+      "Class Flags": 2,
+      "Cardinality": 2147483647,
+      "Snapshots": [
+      ],
+    },
+    {
+      "CID": "ABCDEF011234ABCD4D616E7558656F6E",
+      "Category": "Component Controller Class",
+      "Name": "Xenon",
+      "Vendor": "Xenon",
+      "Version": "1.0.0",
+      "SDKVersion": "VST 3.8.0",
+      "Sub Categories": [
+        "Instrument",
+        "Synth",
+      ],
+      "Class Flags": 2,
+      "Cardinality": 2147483647,
+      "Snapshots": [
+      ],
+    },
+  ],
+}
