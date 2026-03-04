@@ -1,6 +1,6 @@
 #include "PluginProcessor.h"
 #include "PluginEditor.h"
-#include "ADSR.h"
+#include "Voice.h"
 
 /*
   -=-=-=-=-=-=-=-=-=-=-=-=-=-=-
@@ -83,7 +83,7 @@ XenonAudioProcessor::XenonAudioProcessor()
 {
     synth.clearVoices();
     for (int i = 0; i < 8; i++)
-        synth.addVoice(new ADSR());
+        synth.addVoice(new Voice());
 
     synth.clearSounds();
     synth.addSound(new SimpleSound());
@@ -129,7 +129,7 @@ void XenonAudioProcessor::processBlock(juce::AudioBuffer<float>& buffer, juce::M
     float pitch = apvts.getRawParameterValue("pitch") -> load();
 
     for (int i = 0; i < synth.getNumVoices(); ++i)
-        if (auto* voice = dynamic_cast<ADSR*>(synth.getVoice(i)))
+        if (auto* voice = dynamic_cast<Voice*>(synth.getVoice(i)))
         {
             voice->setADSRParameters(attack, decay, sustain, release);
             voice->setWaveType(wave);

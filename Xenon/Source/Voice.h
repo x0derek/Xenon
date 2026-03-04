@@ -2,13 +2,13 @@
 #include <JuceHeader.h>
 
 /*
-  -=-=-=-=-=-=-=-=-=-=-=-=-=
-    Xenon - ADSR.h
-    ADSR Envelope Generator
-  -=-=-=-=-=-=-=-=-=-=-=-=-=
+  -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
+    Xenon - Voice.h
+    Voice Implementation for Synthesis
+  -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
 */
 
-class ADSR : public juce::SynthesiserVoice
+class Voice : public juce::SynthesiserVoice
 {
     public:
 

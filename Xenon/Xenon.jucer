@@ -8,7 +8,6 @@
               companyEmail="i.karpowicz@zset.leszno.pl">
   <MAINGROUP id="MiVOBj" name="Xenon">
     <GROUP id="{C5574DDC-8937-E45B-9CE8-FFCD1F6A348F}" name="Source">
-      <FILE id="e1eWMr" name="ADSR.h" compile="0" resource="0" file="Source/ADSR.h"/>
       <FILE id="RpNuz2" name="EnvelopeSection.h" compile="0" resource="0"
             file="Source/EnvelopeSection.h"/>
       <FILE id="lGOVyc" name="FilterSection.h" compile="0" resource="0" file="Source/FilterSection.h"/>
@@ -22,6 +21,7 @@
       <FILE id="ahNyFn" name="PluginProcessor.h" compile="0" resource="0"
             file="Source/PluginProcessor.h"/>
       <FILE id="U97tiJ" name="ReverbSection.h" compile="0" resource="0" file="Source/ReverbSection.h"/>
+      <FILE id="D9YXAe" name="Voice.h" compile="0" resource="0" file="Source/Voice.h"/>
       <FILE id="ka6pR2" name="XenonLookAndFeel.h" compile="0" resource="0"
             file="Source/XenonLookAndFeel.h"/>
     </GROUP>
