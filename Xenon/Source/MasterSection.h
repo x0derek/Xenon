@@ -13,7 +13,8 @@ class MasterSection : public juce::Component
     public:
         MasterSection(juce::AudioProcessorValueTreeState& apvts)
             : gainAtt(apvts, "gain", gainSlider),
-            pitchAtt(apvts, "pitch", pitchSlider)
+            pitchAtt(apvts, "pitch", pitchSlider),
+            tuneAtt(apvts, "tune", tuneSlider)
         {
             auto setup = [&](juce::Slider& s)
             {
@@ -24,6 +25,7 @@ class MasterSection : public juce::Component
 
             setup(gainSlider);
             setup(pitchSlider);
+            setup(tuneSlider);
 
             auto setupLabel = [&](juce::Label& l, const juce::String& t)
             {
@@ -35,6 +37,7 @@ class MasterSection : public juce::Component
 
             setupLabel(gainLabel, "GAIN");
             setupLabel(pitchLabel, "PITCH");
+            setupLabel(tuneLabel, "TUNE");
         }
 
         void resized() override
@@ -42,7 +45,7 @@ class MasterSection : public juce::Component
             const int labelH = 15;
             const int knobH = 90;
             const int knobY = 24;
-            const int colW = getWidth() / 2;
+            const int colW = getWidth() / 3;
 
             auto place = [&](juce::Slider& knob, juce::Label& label, int col)
             {
@@ -53,13 +56,14 @@ class MasterSection : public juce::Component
 
             place(gainSlider, gainLabel, 0);
             place(pitchSlider, pitchLabel, 1);
+            place(tuneSlider, tuneLabel, 2);
         }
 
     private:
-        juce::Slider gainSlider, pitchSlider;
-        juce::Label gainLabel, pitchLabel;
+        juce::Slider gainSlider, pitchSlider, tuneSlider;
+        juce::Label gainLabel, pitchLabel, tuneLabel;
 
-        juce::AudioProcessorValueTreeState::SliderAttachment gainAtt, pitchAtt;
+        juce::AudioProcessorValueTreeState::SliderAttachment gainAtt, pitchAtt, tuneAtt;
 
         JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(MasterSection)
 };

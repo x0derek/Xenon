@@ -20,6 +20,10 @@ juce::AudioProcessorValueTreeState::ParameterLayout XenonAudioProcessor::createP
 {
     juce::AudioProcessorValueTreeState::ParameterLayout layout;
     
+    // TUNE
+    layout.add(std::make_unique<juce::AudioParameterFloat>(
+        juce::ParameterID { "tune", 1 }, "TUNE",
+        juce::NormalisableRange<float>(300.0f, 500.0f, 0.1f, 1.0f), 440.0f));
     // ADSR
     layout.add(std::make_unique<juce::AudioParameterFloat>(
         juce::ParameterID { "attack", 1 }, "ATTACK",
@@ -116,6 +120,7 @@ void XenonAudioProcessor::processBlock(juce::AudioBuffer<float>& buffer, juce::M
     juce::ScopedNoDenormals noDenormals;
     buffer.clear();
 
+    float tune = apvts.getRawParameterValue("tune") -> load();
     float attack = apvts.getRawParameterValue("attack") -> load();
     float decay = apvts.getRawParameterValue("decay") -> load();
     float sustain = apvts.getRawParameterValue("sustain") -> load();
@@ -135,6 +140,7 @@ void XenonAudioProcessor::processBlock(juce::AudioBuffer<float>& buffer, juce::M
             voice->setWaveType(wave);
             voice->setFilterParameters(cutoff, reson);
             voice->setPitchSemitones(pitch);
+            voice->setTune(tune);
         }
 
     synth.renderNextBlock(buffer, midiMessages, 0, buffer.getNumSamples());

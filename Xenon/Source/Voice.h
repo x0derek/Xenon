@@ -12,6 +12,12 @@ class Voice : public juce::SynthesiserVoice
 {
     public:
 
+        void setTune(float newTune)
+        {
+            tune = newTune;
+            updateAngleDelta();
+        }
+
         enum class WaveType { SINE = 0, SAW = 1, SQUARE = 2, TRIANGLE = 3 };
 
         void setADSRParameters(float attack, float decay, float sustain, float release)
@@ -131,7 +137,7 @@ class Voice : public juce::SynthesiserVoice
         {
             if (sampleRate <= 0.0) return;
 
-            double freq = juce::MidiMessage::getMidiNoteInHertz(currentNote) * std::pow(2.0, (double)pitchSemitones / 12.0);
+            double freq = (tune / 440.0) * juce::MidiMessage::getMidiNoteInHertz(currentNote) * std::pow(2.0, (double)pitchSemitones / 12.0);
             angleDelta = freq * juce::MathConstants<double>::twoPi / sampleRate;
         }
 
@@ -150,6 +156,7 @@ class Voice : public juce::SynthesiserVoice
         float level = 0.0f;
         int currentNote = 69;
         float pitchSemitones = 0.0f;
+        float tune = 440.0f;
         WaveType waveType = WaveType::SINE;
 
         juce::ADSR adsr;
