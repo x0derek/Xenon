@@ -42,6 +42,13 @@ class Voice : public juce::SynthesiserVoice
             updateFilter();
         }
 
+        // CHORUS
+        void setChorusParameters(float rate, float depth)
+        {
+            chorusRate = rate;
+            chorusDepth = depth;
+        }
+
         //PITCH
         void setPitchSemitones(float semitones)
         {
@@ -99,6 +106,18 @@ class Voice : public juce::SynthesiserVoice
 
                 sample = (float)filter.processSingleSampleRaw(sample);
 
+                // CHORUS
+                chorusBuffer[chorusWritePos] = sample;
+                float lfo = (std::sin((float)lfoAngle) + 1.0f) * 0.5f;
+                float chorusTimeSamples = (float)sampleRate * (0.02f + lfo * chorusDepth * 0.02f);
+                int readPos = (chorusWritePos - (int)chorusTimeSamples + chorusBuffer.size()) % chorusBuffer.size();
+                sample = sample * 0.5f + chorusBuffer[readPos] * 0.5f;
+
+                chorusWritePos = (chorusWritePos + 1) % (int)chorusBuffer.size();
+                lfoAngle += chorusRate * juce::MathConstants<double>::twoPi / sampleRate;
+                if (lfoAngle >= juce::MathConstants<double>::twoPi)
+                    lfoAngle -= juce::MathConstants<double>::twoPi;
+
                 leftChannel[i] += sample;
                 if (rightChannel != nullptr)
                     rightChannel[i] += sample;
@@ -111,6 +130,9 @@ class Voice : public juce::SynthesiserVoice
 
         void setCurrentPlaybackSampleRate(double newRate) override
         {
+            chorusBuffer.assign((int)(newRate * 0.1), 0.0f);
+            chorusWritePos = 0;
+            lfoAngle = 0.0;
             sampleRate = newRate;
             adsr.setSampleRate(newRate);
             updateFilter();
@@ -163,4 +185,10 @@ class Voice : public juce::SynthesiserVoice
         juce::IIRFilter filter;
         float filterCutoff = 8000.0f;
         float filterResonance = 0.7f;
+
+        float chorusRate = 1.0f;
+        float chorusDepth = 0.3f;
+        std::vector<float> chorusBuffer;
+        int chorusWritePos = 0;
+        double lfoAngle = 0.0;
 };

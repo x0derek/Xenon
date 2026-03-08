@@ -24,6 +24,7 @@ juce::AudioProcessorValueTreeState::ParameterLayout XenonAudioProcessor::createP
     layout.add(std::make_unique<juce::AudioParameterFloat>(
         juce::ParameterID { "tune", 1 }, "TUNE",
         juce::NormalisableRange<float>(300.0f, 500.0f, 0.1f, 1.0f), 440.0f));
+
     // ADSR
     layout.add(std::make_unique<juce::AudioParameterFloat>(
         juce::ParameterID { "attack", 1 }, "ATTACK",
@@ -63,6 +64,15 @@ juce::AudioProcessorValueTreeState::ParameterLayout XenonAudioProcessor::createP
     layout.add(std::make_unique<juce::AudioParameterFloat>(
         juce::ParameterID { "reverbMix", 1 }, "MIX",
         juce::NormalisableRange<float>(0.0f, 1.0f, 0.001f), 0.2f));
+
+    // CHORUS
+    layout.add(std::make_unique<juce::AudioParameterFloat>(
+        juce::ParameterID { "chorusRate", 1 }, "RATE",
+        juce::NormalisableRange<float>(0.1f, 5.0f, 0.1f, 1.0f), 1.0f));
+        
+    layout.add(std::make_unique<juce::AudioParameterFloat>(
+        juce::ParameterID { "chorusDepth", 1 }, "DEPTH",
+        juce::NormalisableRange<float>(0.0f, 1.0f, 0.1f, 1.0f), 0.3f));
 
     // MASTER
     layout.add(std::make_unique<juce::AudioParameterFloat>(
@@ -130,17 +140,20 @@ void XenonAudioProcessor::processBlock(juce::AudioBuffer<float>& buffer, juce::M
     float reson = apvts.getRawParameterValue("filterResonance") -> load();
     float rvbSize = apvts.getRawParameterValue("reverbSize") -> load();
     float rvbMix = apvts.getRawParameterValue("reverbMix") -> load();
+    float chorusRate = apvts.getRawParameterValue("chorusRate") -> load();
+    float chorusDepth = apvts.getRawParameterValue("chorusDepth") -> load();
     float gain = apvts.getRawParameterValue("gain") -> load();
     float pitch = apvts.getRawParameterValue("pitch") -> load();
 
     for (int i = 0; i < synth.getNumVoices(); ++i)
         if (auto* voice = dynamic_cast<Voice*>(synth.getVoice(i)))
         {
+            voice->setTune(tune);
             voice->setADSRParameters(attack, decay, sustain, release);
             voice->setWaveType(wave);
             voice->setFilterParameters(cutoff, reson);
+            voice->setChorusParameters(chorusRate, chorusDepth);
             voice->setPitchSemitones(pitch);
-            voice->setTune(tune);
         }
 
     synth.renderNextBlock(buffer, midiMessages, 0, buffer.getNumSamples());

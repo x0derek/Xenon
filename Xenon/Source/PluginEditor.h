@@ -6,6 +6,7 @@
 #include "OscSection.h"
 #include "FilterSection.h"
 #include "ReverbSection.h"
+#include "ChorusSection.h"
 #include "MasterSection.h"
 
 /*
@@ -33,6 +34,7 @@ class XenonAudioProcessorEditor : public juce::AudioProcessorEditor
     OscSection oscSection;
     FilterSection filterSection;
     ReverbSection reverbSection;
+    ChorusSection chorusSection;
     MasterSection masterSection;
 
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(XenonAudioProcessorEditor)
