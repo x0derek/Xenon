@@ -8,6 +8,7 @@
 #include "ReverbSection.h"
 #include "ChorusSection.h"
 #include "MasterSection.h"
+#include "PresetSection.h"
 
 /*
   -=-=-=-=-=-=-=-=-=-=-=-=-
@@ -36,6 +37,6 @@ class XenonAudioProcessorEditor : public juce::AudioProcessorEditor
     ReverbSection reverbSection;
     ChorusSection chorusSection;
     MasterSection masterSection;
-
+    PresetSection presetSection;
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(XenonAudioProcessorEditor)
 };

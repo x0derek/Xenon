@@ -15,7 +15,8 @@ XenonAudioProcessorEditor::XenonAudioProcessorEditor(XenonAudioProcessor& p)
     filterSection(p.apvts),
     reverbSection(p.apvts),
     chorusSection(p.apvts),
-    masterSection(p.apvts)
+    masterSection(p.apvts),
+    presetSection(p)
 {
     setLookAndFeel(&lnf);
 
@@ -25,6 +26,7 @@ XenonAudioProcessorEditor::XenonAudioProcessorEditor(XenonAudioProcessor& p)
     addAndMakeVisible(reverbSection);
     addAndMakeVisible(chorusSection);
     addAndMakeVisible(masterSection);
+    addAndMakeVisible(presetSection);
 
     setSize(500, 698);
 }
@@ -63,19 +65,20 @@ void XenonAudioProcessorEditor::paint(juce::Graphics& g)
 
     const int m = 10;
     const int t = 46;
-    const int w2 = (getWidth() - 3 * m) / 2;
-    const int h3 = (getHeight() - t - m * 5) / 4;
+    const int wL = (getWidth() - m * 3) / 2;
+    const int wR = wL;
+    const int xR = m * 2 + wL;
+    const int rowH = (getHeight() - t - m * 5) / 4;
 
-    // ROW 1
-    drawSection({ m, t, w2, h3 }, "ENVELOPE");
-    drawSection({ m * 2 + w2, t, w2, h3 }, "OSCILLATOR");
-    // ROW 2
-    drawSection({ m, t + h3 + m, w2, h3 }, "FILTER");
-    drawSection({ m * 2 + w2, t + h3 + m, w2, h3 }, "REVERB");
-    // ROW 3
-    drawSection({ m, t + h3 * 2 + m * 2, getWidth() - m * 2, h3 }, "CHORUS");
-    // ROW 4
-    drawSection({ m, t + h3 * 3 + m * 3, getWidth() - m * 2, h3 }, "MASTER");
+    // LEFT COLUMN
+    drawSection({ m, t, wL, rowH }, "ENVELOPE");
+    drawSection({ m, t + rowH + m, wL, rowH }, "FILTER");
+    drawSection({ m, t + (rowH + m) * 2, wL, rowH * 2 + m }, "MASTER");
+    // RIGHT COLUMN
+    drawSection({ xR, t, wR, rowH }, "OSCILLATOR");
+    drawSection({ xR, t + rowH + m, wR, rowH }, "REVERB");
+    drawSection({ xR, t + (rowH + m) * 2, wR, rowH }, "CHORUS");
+   drawSection({ xR, t + (rowH + m) * 3, wR, rowH }, "PRESETS");
 }
 
 void XenonAudioProcessorEditor::resized()
@@ -85,14 +88,13 @@ void XenonAudioProcessorEditor::resized()
     const int w2 = (getWidth() - m * 3) / 2;
     const int h3 = (getHeight() - t - m * 5) / 4;
 
-    // ROW 1
+    //LEFT COLUMN
     envelopeSection.setBounds(m, t, w2, h3);
-    oscSection.setBounds(m * 2 + w2, t, w2, h3);
-    // ROW 2
     filterSection.setBounds(m, t + h3 + m, w2, h3);
+    masterSection.setBounds(m, t + (h3 + m) * 2, w2, h3 * 2 + m);
+    //RIGHT COLUMN
+    oscSection.setBounds(m * 2 + w2, t, w2, h3);
     reverbSection.setBounds(m * 2 + w2, t + h3 + m, w2, h3);
-    // ROW 3
-    chorusSection.setBounds(m, t + h3 * 2 + m * 2, getWidth() - m * 2, h3);
-    // ROW 4
-    masterSection.setBounds(m, t + h3 * 3 + m * 3, getWidth() - m * 2, h3);
+    chorusSection.setBounds(m * 2 + w2, t + (h3 + m) * 2, w2, h3);
+    presetSection.setBounds(m * 2 + w2, t + (h3 + m) * 3, w2, h3);
 }

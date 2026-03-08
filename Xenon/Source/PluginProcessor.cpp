@@ -105,6 +105,37 @@ XenonAudioProcessor::XenonAudioProcessor()
 
 XenonAudioProcessor::~XenonAudioProcessor() {}
 
+// PRESETS
+void XenonAudioProcessor::loadPreset(int index)
+{
+    if (index < 0 || index >= (int)presets.size()) return;
+
+    const auto& p = presets[index];
+
+    auto setValue = [&](const juce::String& id, float value)
+    {
+        apvts.getParameter(id)->setValueNotifyingHost(
+            apvts.getParameterRange(id).convertTo0to1(value)
+        );
+    };
+
+    setValue("tune", p.tune);
+    setValue("attack", p.attack);
+    setValue("decay", p.decay);
+    setValue("sustain", p.sustain);
+    setValue("release", p.release);
+    setValue("filterCutoff", p.filterCutoff);
+    setValue("filterResonance", p.filterResonance);
+    setValue("reverbSize", p.reverbSize);
+    setValue("reverbMix", p.reverbMix);
+    setValue("chorusRate", p.chorusRate);
+    setValue("chorusDepth", p.chorusDepth);
+    setValue("gain", p.gain);
+    setValue("pitch", p.pitch);
+
+    apvts.getParameter("waveType")->setValueNotifyingHost(p.waveType / 3.0f);
+}
+
 void XenonAudioProcessor::prepareToPlay(double sampleRate, int samplesPerBlock)
 {
     juce::ignoreUnused(samplesPerBlock);

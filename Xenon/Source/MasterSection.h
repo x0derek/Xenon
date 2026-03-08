@@ -18,7 +18,7 @@ class MasterSection : public juce::Component
         {
             auto setup = [&](juce::Slider& s)
             {
-                s.setSliderStyle(juce::Slider::RotaryVerticalDrag);
+                s.setSliderStyle(juce::Slider::LinearVertical);
                 s.setTextBoxStyle(juce::Slider::TextBoxBelow, false, 70, 16);
                 addAndMakeVisible(s);
             };
@@ -43,15 +43,15 @@ class MasterSection : public juce::Component
         void resized() override
         {
             const int labelH = 15;
-            const int knobH = 90;
-            const int knobY = 24;
+            const int sliderH = getHeight() - labelH - 24;
+            const int sliderY = 24;
             const int colW = getWidth() / 3;
 
             auto place = [&](juce::Slider& knob, juce::Label& label, int col)
             {
                 int x = col * colW;
-                knob.setBounds(x, knobY, colW, knobH);
-                label.setBounds(x, knobY + knobH, colW, labelH);
+                knob.setBounds(x, sliderY, colW, sliderH);
+                label.setBounds(x, sliderY + sliderH, colW, labelH);
             };
 
             place(gainSlider, gainLabel, 0);
